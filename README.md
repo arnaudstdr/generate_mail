@@ -131,7 +131,6 @@ Le script vous guide à travers les étapes suivantes :
 ## 🎨 Design
 
 Le template utilise :
-- **Couleurs africaines** : Ocre, brun sable, doré
 - **Design responsive** s'adaptant aux mobiles
 - **Grille flexible** pour les médias
 - **Effets visuels** (ombres, transitions)
