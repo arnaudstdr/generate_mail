@@ -1,0 +1,83 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.venv/
+venv/
+env/
+ENV/
+
+# PyCharm
+.idea/
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails and system files
+Thumbs.db
+desktop.ini
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# Generated HTML templates
+*_template_*.html
+test_*.html
+demo_email_template_*.html
+email_template_*.html
+
+# Backup files
+*.bak
+*.old
+*~
+
+# Secrets and credentials
+credentials.json
+client_secret.json
+*.pem
+*.key
+.env
+
+# Node / front-end (in case added later)
+node_modules/
+npm-debug.log
+
+# Python packaging
+dist/
+build/
+*.egg-info/
+
+# Images/large media temporary
+*.tmp
+*.cache
+
+# Ignore compiled assets
+*.pyc
+
+# Ignore launch script outputs
+*.log
+
+# Misc
+coverage/
+htmlcov/
+
+# Ignore OS-specific files
+*.swp
+
+# Optional: ignore all files in a local data/ or output/ directory if you add one
+output/
+data/
+
+# Keep the README and essential docs
+!README.md
+!CHANGELOG.md
+!DEPANNAGE_PHOTOS.md

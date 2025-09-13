@@ -1,0 +1,11 @@
+requests
+Pillow
+python-dotenv
+google-auth
+google-auth-oauthlib
+google-api-python-client
+requests-oauthlib
+# Optionnel (pour SMTP/gestion email avancée)
+# aiosmtplib
+# sendgrid
+# mailgun
