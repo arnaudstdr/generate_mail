@@ -76,4 +76,4 @@ esac
 
 echo ""
 echo "✨ Merci d'utiliser le générateur de templates email !"
-echo "🌍 Association Gamadji Saré"
+echo "Arnaud STADLER - Dev Python | 🌍 Association Gamadji Saré"
