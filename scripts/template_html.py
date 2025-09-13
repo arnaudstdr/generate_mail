@@ -6,6 +6,18 @@ Génère des templates HTML responsives avec une palette de couleurs inspirée d
 """
 
 from typing import List, Dict
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+LOGO_PATH = os.path.join(BASE_DIR, 'logo_base64.txt')
+
+with open(LOGO_PATH, 'r') as f:
+    _raw_logo = f.read().strip()
+
+if _raw_logo.startswith('data:image'):
+    LOGO_SRC = _raw_logo
+else:
+    LOGO_SRC = f"data:image/png;base64,{_raw_logo}"
 
 
 class EmailTemplate:
@@ -48,6 +60,17 @@ class EmailTemplate:
                 text-align: center;
                 color: white;
                 position: relative;
+            }
+            
+            /* Logo de l'association */
+            .logo {
+                max-width: 120px;
+                height: auto;
+                margin-bottom: 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                position: relative;
+                z-index: 2;
             }
             
             .header::before {
@@ -419,6 +442,7 @@ class EmailTemplate:
     <div class="email-container">
         <!-- Header -->
         <div class="header">
+            <img src="{LOGO_SRC}" alt="Logo de l'association" class="logo">
             <h1>{title}</h1>
             <div class="subtitle">Association Gamadji Saré</div>
         </div>
