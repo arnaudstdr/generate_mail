@@ -1,5 +1,10 @@
 # Générateur de Templates Email - Association Gamadji
 
+[![Python version](https://img.shields.io/badge/python-%3E%3D3.8-blue)](https://www.python.org/downloads/)
+[![Licence](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENCE)
+[![Dernier commit](https://img.shields.io/github/last-commit/arnaudstdr/generate_mail/main)](https://github.com/arnaudstdr/generate_mail/commits/main)
+[![Stars](https://img.shields.io/github/stars/arnaudstdr/generate_mail?style=social)](https://github.com/arnaudstdr/generate_mail/stargazers)
+
 Un script Python pour générer des templates HTML d'emails personnalisés avec photos et vidéos depuis Google Drive.
 
 ## 🎯 Fonctionnalités
