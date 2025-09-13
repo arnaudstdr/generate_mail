@@ -22,7 +22,8 @@ Un script Python pour générer des templates HTML d'emails personnalisés avec 
 
 1. **Cloner ou télécharger le projet**
    ```bash
-   cd /Users/arnaudstadler/Desktop/template_mail_gamadji
+   git clone https://github.com/arnaudstdr/generate_mail.git
+   cd generate_mail
    ```
 
 2. **L'environnement Python est déjà configuré** avec les dépendances installées :
