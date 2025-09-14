@@ -21,19 +21,19 @@ case $choice in
         echo ""
         echo "🚀 Lancement du générateur interactif..."
         echo ""
-        /Users/arnaudstadler/Documents/PROJETS/template_mail_gamadji/.venv/bin/python generate_template.py
+        .venv/bin/python generate_template.py
         ;;
     2)
         echo ""
         echo "🎮 Lancement de la démonstration..."
         echo ""
-        /Users/arnaudstadler/Documents/PROJETS/template_mail_gamadji/.venv/bin/python run_demo.py
+        .venv/bin/python run_demo.py
         ;;
     3)
         echo ""
         echo "🧪 Lancement du testeur de liens..."
         echo ""
-        /Users/arnaudstadler/Documents/PROJETS/template_mail_gamadji/.venv/bin/python test_drive_links.py
+        .venv/bin/python test_drive_links.py
         ;;
     4)
         echo ""
