@@ -8,13 +8,14 @@ echo ""
 echo "Choisissez une option :"
 echo ""
 echo "1) 🚀 Lancer le générateur interactif complet"
-echo "2) 🎮 Voir la démonstration rapide"
-echo "3) 🧪 Tester des liens Google Drive"
-echo "4) 📚 Afficher l'aide"
-echo "5) 🌐 Ouvrir le dernier template généré"
+echo "2) 📬 Envoyer les emails"
+echo "3) 🎮 Voir la démonstration rapide"
+echo "4) 🧪 Tester des liens Google Drive"
+echo "5) 📚 Afficher l'aide"
+echo "6) 🌐 Ouvrir le dernier template généré"
 echo ""
 
-read -p "Votre choix (1-5) : " choice
+read -p "Votre choix (1-6) : " choice
 
 case $choice in
     1)
@@ -25,17 +26,23 @@ case $choice in
         ;;
     2)
         echo ""
+        echo "📬 Lancement de l'envoi des emails..."
+        echo ""
+        .venv/bin/python send_emails.py
+        ;;
+    3)
+        echo ""
         echo "🎮 Lancement de la démonstration..."
         echo ""
         .venv/bin/python run_demo.py
         ;;
-    3)
+    4)
         echo ""
         echo "🧪 Lancement du testeur de liens..."
         echo ""
         .venv/bin/python test_drive_links.py
         ;;
-    4)
+    5)
         echo ""
         echo "📚 AIDE - Générateur de Templates Email"
         echo "======================================"
@@ -57,7 +64,7 @@ case $choice in
         echo "📁 Les templates HTML sont sauvegardés dans le dossier output/"
         echo ""
         ;;
-    5)
+    6)
         echo ""
         echo "🔍 Recherche du dernier template généré..."
         latest_file=$(ls -t output/*email_template*.html 2>/dev/null | head -n1)
