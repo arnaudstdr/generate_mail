@@ -76,6 +76,7 @@ htmlcov/
 # Optional: ignore all files in a local data/ or output/ directory if you add one
 output/
 data/
+scripts/email_sender/destinataires.csv
 
 # Keep the README and essential docs
 !README.md

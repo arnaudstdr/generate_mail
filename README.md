@@ -30,6 +30,10 @@ Un script Python pour générer des templates HTML d'emails personnalisés avec 
    - `requests` - pour les interactions avec Google Drive
    - `Pillow` - pour le traitement d'images (si nécessaire)
 
+3. **Configuration des variables d'environnement**
+   - Créez un fichier `.env` à la racine du projet (voir [CONFIGURATION.md](./CONFIGURATION.md))
+   - Ajoutez-y vos identifiants pour l'envoi d'emails
+
 ## 📋 Utilisation
 
 ### Menu de lancement rapide

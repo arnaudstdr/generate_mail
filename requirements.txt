@@ -5,6 +5,7 @@ google-auth
 google-auth-oauthlib
 google-api-python-client
 requests-oauthlib
+yagmail
 # Optionnel (pour SMTP/gestion email avancée)
 # aiosmtplib
 # sendgrid
