@@ -3,29 +3,41 @@ import os
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QLineEdit, QTextEdit, QPushButton, QMessageBox,
-    QListWidget, QInputDialog
+    QListWidget, QInputDialog, QTabWidget, QFileDialog, QComboBox
 )
-from PyQt5.QtCore import Qt
-from scripts.template_mail_generator import EmailTemplateGenerator
-from datetime import datetime
+from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QDesktopServices
-from PyQt5.QtCore import QUrl
+from datetime import datetime
+from scripts.template_mail_generator import EmailTemplateGenerator
+from scripts.email_sender.mail import EmailSender
+
 
 class EmailGeneratorGUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Générateur d'Emails - Association Gamadji")
-        self.setMinimumWidth(800)
-        self.setMinimumHeight(600)
+        self.setMinimumWidth(1000)
+        self.setMinimumHeight(700)
         
-        self.image_links = []  # Liste pour les liens d'images Google Drive
-        self.video_links = []  # Liste pour les liens vidéos Google Drive
+        self.image_links = []
+        self.video_links = []
         self.template_generator = EmailTemplateGenerator()
         
-        # Widget central et layout principal
+        # Widget central avec onglets
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
+        
+        # Création des onglets
+        tabs = QTabWidget()
+        tabs.addTab(self.create_generator_tab(), "🔨 Générateur de Template")
+        tabs.addTab(self.create_sender_tab(), "📧 Envoi d'Emails")
+        main_layout.addWidget(tabs)
+    
+    def create_generator_tab(self):
+        """Crée l'onglet de génération de template"""
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
         
         # Layout horizontal pour le contenu et les listes de liens
         content_layout = QHBoxLayout()
@@ -77,12 +89,46 @@ class EmailGeneratorGUI(QMainWindow):
         right_layout.addWidget(remove_video_btn)
         
         content_layout.addLayout(right_layout)
-        main_layout.addLayout(content_layout)
+        layout.addLayout(content_layout)
         
         # Bouton de génération
         generate_btn = QPushButton("🚀 Générer le template")
         generate_btn.clicked.connect(self.generate_template)
-        main_layout.addWidget(generate_btn)
+        layout.addWidget(generate_btn)
+        
+        return tab
+    
+    def create_sender_tab(self):
+        """Crée l'onglet d'envoi d'emails"""
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        
+        # Sélection du template
+        template_layout = QHBoxLayout()
+        template_label = QLabel("📄 Template HTML :")
+        self.template_combo = QComboBox()
+        self.refresh_templates_btn = QPushButton("🔄 Rafraîchir")
+        self.refresh_templates_btn.clicked.connect(self.refresh_templates)
+        
+        template_layout.addWidget(template_label)
+        template_layout.addWidget(self.template_combo)
+        template_layout.addWidget(self.refresh_templates_btn)
+        layout.addLayout(template_layout)
+        
+        # Aperçu du template
+        preview_btn = QPushButton("👁️ Aperçu du template")
+        preview_btn.clicked.connect(self.preview_template)
+        layout.addWidget(preview_btn)
+        
+        # Bouton d'envoi
+        send_btn = QPushButton("📨 Envoyer les emails")
+        send_btn.clicked.connect(self.send_emails)
+        layout.addWidget(send_btn)
+        
+        # Initialiser la liste des templates
+        self.refresh_templates()
+        
+        return tab
 
     def add_drive_link(self, media_type):
         link, ok = QInputDialog.getText(
@@ -110,6 +156,48 @@ class EmailGeneratorGUI(QMainWindow):
             if current_row >= 0:
                 self.video_links.pop(current_row)
                 self.videos_list.takeItem(current_row)
+
+    def refresh_templates(self):
+        """Rafraîchit la liste des templates disponibles"""
+        self.template_combo.clear()
+        output_dir = os.path.join(os.getcwd(), "output")
+        
+        if os.path.exists(output_dir):
+            templates = [f for f in os.listdir(output_dir) if f.endswith('.html')]
+            templates.sort(reverse=True)  # Plus récent en premier
+            self.template_combo.addItems(templates)
+    
+    def preview_template(self):
+        """Ouvre le template sélectionné dans le navigateur"""
+        if self.template_combo.currentText():
+            template_path = os.path.join(os.getcwd(), "output", self.template_combo.currentText())
+            QDesktopServices.openUrl(QUrl.fromLocalFile(template_path))
+    
+    def send_emails(self):
+        """Envoie les emails avec le template sélectionné"""
+        if not self.template_combo.currentText():
+            QMessageBox.warning(self, "Attention", "Veuillez sélectionner un template!")
+            return
+            
+        try:
+            template_path = os.path.join(os.getcwd(), "output", self.template_combo.currentText())
+            
+            # Confirmation avant envoi
+            reply = QMessageBox.question(
+                self,
+                "Confirmation",
+                "Êtes-vous sûr de vouloir envoyer les emails à tous les destinataires ?\n\n" +
+                "Assurez-vous que le fichier destinataires.csv est à jour.",
+                QMessageBox.Yes | QMessageBox.No
+            )
+            
+            if reply == QMessageBox.Yes:
+                email_sender = EmailSender()
+                email_sender.send_bulk_emails()
+                QMessageBox.information(self, "Succès", "Emails envoyés avec succès à tous les destinataires!")
+                
+        except Exception as e:
+            QMessageBox.critical(self, "Erreur", f"Erreur lors de l'envoi : {str(e)}")
 
     def generate_template(self):
         title = self.title_input.text().strip()
@@ -142,6 +230,9 @@ class EmailGeneratorGUI(QMainWindow):
             success_message = f"Template généré avec succès!\n\nFichier : {filepath}"
             QMessageBox.information(self, "Succès", success_message)
             
+            # Rafraîchir la liste des templates
+            self.refresh_templates()
+            
             # Proposition d'ouverture du fichier
             reply = QMessageBox.question(
                 self, 
@@ -153,7 +244,7 @@ class EmailGeneratorGUI(QMainWindow):
             if reply == QMessageBox.Yes:
                 # Ouvrir le fichier avec le navigateur par défaut
                 QDesktopServices.openUrl(QUrl.fromLocalFile(filepath))
-                
+            
         except Exception as e:
             QMessageBox.critical(self, "Erreur", f"Erreur lors de la génération : {str(e)}")
 
