@@ -42,12 +42,22 @@ Un script Python pour générer des templates HTML d'emails personnalisés avec 
 ./launch.sh
 ```
 
-Options disponibles :
-1. **🚀 Générateur interactif complet**
-2. **🎮 Démonstration rapide**
-3. **🧪 Testeur de liens Google Drive** *(Nouveau !)*
-4. **📚 Aide**
-5. **🌐 Ouvrir le dernier template**
+Au démarrage, choisissez le mode d'utilisation :
+- 1) 🖥️ Interface graphique (GUI) — nécessite PyQt5
+- 2) 💻 Mode Terminal (menu texte)
+
+Options disponibles en mode Terminal :
+1. **🚀 Lancer le générateur interactif complet**
+2. **📬 Envoyer les emails**
+3. **🎮 Voir la démonstration rapide**
+4. **🧪 Tester des liens Google Drive**
+5. **📚 Afficher l'aide**
+6. **🌐 Ouvrir le dernier template généré**
+
+> Astuce: si PyQt5 n'est pas installé, le script bascule automatiquement en mode Terminal. Installez les dépendances avec:
+> ```bash
+> python -m pip install -r requirements.txt
+> ```
 
 ### Lancement direct (nouvelle structure)
 
@@ -156,7 +166,7 @@ template_mail_gamadji/
 ├── 📄 generate_template.py          # Point d'entrée principal
 ├── 📄 run_demo.py                   # Lancement démo
 ├── 📄 test_drive_links.py           # Test des liens
-├── 📄 launch.sh                     # Menu de lancement
+├── 📄 launch.sh                     # Menu de lancement (GUI ou Terminal)
 ├── 📁 output/                       # Fichiers HTML générés
 ├── 📁 .venv/                        # Environnement Python
 ├── 📄 README.md                     # Documentation

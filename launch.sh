@@ -2,9 +2,49 @@
 # Script de lancement pour le générateur de templates email
 # Association Gamadji
 
+# Se placer dans le dossier du script pour garantir les chemins relatifs
+cd "$(cd "$(dirname "$0")" && pwd)" || exit 1
+
+# Détecter l'interpréteur Python
+if [ -x ".venv/bin/python" ]; then
+    PYTHON=".venv/bin/python"
+elif command -v python3 >/dev/null 2>&1; then
+    PYTHON="python3"
+elif command -v python >/dev/null 2>&1; then
+    PYTHON="python"
+else
+    echo "❌ Aucun interpréteur Python trouvé. Veuillez installer Python 3."
+    exit 1
+fi
+
 echo "🎯 GÉNÉRATEUR DE TEMPLATES EMAIL - ASSOCIATION GAMADJI"
 echo "====================================================="
 echo ""
+
+# Choix initial: Interface Graphique ou Terminal
+echo "Souhaitez-vous utiliser l'interface graphique (GUI) ou rester dans le terminal ?"
+echo ""
+echo "1) 🖥️ Interface graphique (GUI)"
+echo "2) 💻 Mode Terminal (menu texte)"
+echo ""
+read -p "Votre choix (1-2, défaut 2) : " mode_choice
+mode_choice=${mode_choice:-2}
+
+if [[ "$mode_choice" == "1" || "$mode_choice" == "G" || "$mode_choice" == "g" ]]; then
+    echo ""
+    echo "🖥️ Lancement de l'interface graphique..."
+    echo ""
+    # Vérifier la disponibilité de PyQt5 avant de lancer la GUI
+    if $PYTHON -c "import PyQt5" >/dev/null 2>&1; then
+        exec $PYTHON gui.py
+    else
+        echo "⚠️ PyQt5 n'est pas installé pour l'interpréteur: $PYTHON"
+        echo "   Pour l'installer: $PYTHON -m pip install -r requirements.txt"
+        echo "   Bascule en mode Terminal..."
+        echo ""
+    fi
+fi
+
 echo "Choisissez une option :"
 echo ""
 echo "1) 🚀 Lancer le générateur interactif complet"
@@ -22,25 +62,25 @@ case $choice in
         echo ""
         echo "🚀 Lancement du générateur interactif..."
         echo ""
-        .venv/bin/python generate_template.py
+        $PYTHON generate_template.py
         ;;
     2)
         echo ""
         echo "📬 Lancement de l'envoi des emails..."
         echo ""
-        .venv/bin/python send_emails.py
+        $PYTHON send_emails.py
         ;;
     3)
         echo ""
         echo "🎮 Lancement de la démonstration..."
         echo ""
-        .venv/bin/python run_demo.py
+        $PYTHON run_demo.py
         ;;
     4)
         echo ""
         echo "🧪 Lancement du testeur de liens..."
         echo ""
-        .venv/bin/python test_drive_links.py
+        $PYTHON test_drive_links.py
         ;;
     5)
         echo ""
@@ -77,7 +117,7 @@ case $choice in
         ;;
     *)
         echo ""
-        echo "❌ Choix invalide. Veuillez choisir 1, 2, 3, 4 ou 5."
+        echo "❌ Choix invalide. Veuillez choisir 1, 2, 3, 4, 5 ou 6."
         ;;
 esac
 
