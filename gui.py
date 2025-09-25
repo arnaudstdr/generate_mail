@@ -2,8 +2,9 @@ import sys
 import os
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QLineEdit, QTextEdit, QPushButton, QMessageBox,
-    QListWidget, QInputDialog, QTabWidget, QFileDialog, QComboBox
+    QHBoxLayout, QLabel, QLineEdit, QTextEdit, QPushButton, QMessageBox,
+    QListWidget, QInputDialog, QTabWidget, QFileDialog, QComboBox,
+    QTableWidget, QTableWidgetItem, QHeaderView
 )
 from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QDesktopServices
@@ -22,6 +23,10 @@ class EmailGeneratorGUI(QMainWindow):
         self.image_links = []
         self.video_links = []
         self.template_generator = EmailTemplateGenerator()
+
+        # Initialiser le gestionnaire de destinataires
+        from manage_recipients import RecipientManager
+        self.recipients_manager = RecipientManager()
         
         # Widget central avec onglets
         central_widget = QWidget()
@@ -32,6 +37,7 @@ class EmailGeneratorGUI(QMainWindow):
         tabs = QTabWidget()
         tabs.addTab(self.create_generator_tab(), "🔨 Générateur de Template")
         tabs.addTab(self.create_sender_tab(), "📧 Envoi d'Emails")
+        tabs.addTab(self.create_recipient_tab(), "📮 Gestion des Destinataires")
         main_layout.addWidget(tabs)
     
     def create_generator_tab(self):
@@ -129,6 +135,219 @@ class EmailGeneratorGUI(QMainWindow):
         self.refresh_templates()
         
         return tab
+    
+    def create_recipient_tab(self):
+        """Crée l'onglet de gestion des destinataires"""
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+
+        # Titre
+        title_label = QLabel("📮 Gestion des Destinataires")
+        title_label.setStyleSheet("font-size: 16px; font-weight: bold; margin: 10px")
+        layout.addWidget(title_label)
+
+        # Tableau des destinataires
+        self.recipients_table = QTableWidget()
+        self.recipients_table.setColumnCount(2)
+        self.recipients_table.setHorizontalHeaderLabels(["Nom", "Email"])
+        self.recipients_table.horizontalHeader().setStretchLastSection(True)
+        self.recipients_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        layout.addWidget(self.recipients_table)
+
+        # Boutons d'action
+        buttons_layout = QHBoxLayout()
+
+        add_btn = QPushButton("➕ Ajouter")
+        add_btn.clicked.connect(self.add_recipient)
+        buttons_layout.addWidget(add_btn)
+
+        edit_btn = QPushButton("🖊️ Modifier")
+        edit_btn.clicked.connect(self.edit_recipient)
+        buttons_layout.addWidget(edit_btn)
+
+        remove_btn = QPushButton("❌ Supprimer")
+        remove_btn.clicked.connect(self.remove_recipient)
+        buttons_layout.addWidget(remove_btn)
+
+        import_btn = QPushButton("📥 Importer CSV")
+        import_btn.clicked.connect(self.import_recipients)
+        buttons_layout.addWidget(import_btn)
+
+        export_btn = QPushButton("📤 Exporter CSV")
+        export_btn.clicked.connect(self.export_recipients)
+        buttons_layout.addWidget(export_btn)
+
+        layout.addLayout(buttons_layout)
+
+        # charger les destinataires au démarrage
+        self.refresh_recipients()
+
+        return tab
+    
+    def refresh_recipients(self):
+        """Rafraîchit le tableau des destinataires"""
+        recipients = self.recipients_manager.load_recipients()
+        self.recipients_table.setRowCount(len(recipients))
+
+        for i, recipient in enumerate(recipients):
+            self.recipients_table.setItem(i, 0, QTableWidgetItem(recipient['name']))
+            self.recipients_table.setItem(i, 1, QTableWidgetItem(recipient['email']))
+
+    def add_recipient(self):
+        """Ajoute un nouveau destinataire via une boîte de dialogue"""
+        name, ok1 = QInputDialog.getText(self, "Ajouter un destinataire", "Nom :")
+        if not ok1 or not name.strip():
+            return
+        
+        email, ok2 = QInputDialog.getText(self, "Ajouter un destinataire", "Adresse email :")
+        if not ok2 or not email.strip():
+            return
+        
+        recipients = self.recipients_manager.load_recipients()
+
+        # Vérifier si l'email existe déjà
+        for recipient in recipients:
+            if recipient['email'].lower() == email.lower():
+                QMessageBox.warning(self, "Erreur", "Cet email existe déjà !")
+                return
+            
+        recipients.append({'name': name.strip(), 'email': email.strip()})
+        self.recipients_manager.save_recipients(recipients)
+        self.refresh_recipients()
+
+        QMessageBox.information(self, "Succès", f"Destinataire ajouté : {name.strip()}")
+
+    def edit_recipient(self):
+        """Modifie le destinataire sélectionné"""
+        current_row = self.recipients_table.currentRow()
+        if current_row < 0:
+            QMessageBox.warning(self, "Erreur", "Veuillez sélectionner un destinataire à modifier.")
+            return
+        
+        recipients = self.recipients_manager.load_recipients()
+        if current_row >= len(recipients):
+            return
+        
+        current_recipient = recipients[current_row]
+
+        name, ok1 = QInputDialog.getText(self, "Modifier un destinataire", "Nom :", text=current_recipient['name'])
+        if not ok1:
+            return
+        
+        email, ok2 = QInputDialog.getText(self, "Modifier un destinataire", "Adresse email :", text=current_recipient['email'])
+        if not ok2 or not email.strip() or '@' not in email:
+            QMessageBox.warning(self, "Erreur", "Veuillez saisir une adresse email valide.")
+            return
+        
+        # Vérifier si le nouvel email existe déjà (sauf pour le destinataire actuel)
+        for i, recipient in enumerate(recipients):
+            if i != current_row and recipient['email'].lower() == email.lower():
+                QMessageBox.warning(self, "Erreur", "Cet email existe déjà !")
+                return
+            
+        recipients[current_row] = {'name': name.strip(), 'email': email.strip()}
+        self.recipients_manager.save_recipients(recipients)
+        self.refresh_recipients()
+
+        QMessageBox.information(self, "Succès", f"Destinataire modifié : {name.strip()}")
+
+    def remove_recipient(self):
+        """Supprime le destinataire sélectionné"""
+        current_row = self.recipients_table.currentRow()
+        if current_row < 0:
+            QMessageBox.warning(self, "Erreur", "Veuillez sélectionner un destinataire à supprimer.")
+            return
+        
+        recipients = self.recipients_manager.load_recipients()
+        if current_row >= len(recipients):
+            return
+        
+        recipient = recipients[current_row]
+        
+        reply = QMessageBox.question(
+            self,
+            "Confirmation",
+            f"Êtes-vous sûr de vouloir supprimer :\n{recipient['name']} <{recipient['email']}> ?",
+            QMessageBox.Yes | QMessageBox.No
+        )
+        
+        if reply == QMessageBox.Yes:
+            recipients.pop(current_row)
+            self.recipients_manager.save_recipients(recipients)
+            self.refresh_recipients()
+            QMessageBox.information(self, "Succès", "Destinataire supprimé.")
+
+    def import_recipients(self):
+        """Importe des destinataires depuis un fichier CSV"""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Importer des destinataires",
+            "",
+            "Fichiers CSV (*.csv);;Tous les fichiers (*)"
+        )
+
+        if not file_path:
+            return
+        
+        try:
+            import csv
+            imported_count = 0
+            skipped_count = 0
+            recipients = self.recipients_manager.load_recipients()
+            existing_emails = {r['email'].lower() for r in recipients}
+
+            with open(file_path, 'r', encoding='utf-8') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    if 'email' in row and 'name' in row:
+                        email = row['email'].strip().lower()
+                        if email and '@' in email and email not in existing_emails:
+                            recipients.append({
+                                'name': row['name'].strip(),
+                                'email': email
+                            })
+                            existing_emails.add(email)
+                            imported_count += 1
+                        else:
+                            skipped_count += 1
+
+            self.recipients_manager.save_recipients(recipients)
+            self.refresh_recipients()
+
+            message = f"{imported_count} destinataire(s) importé(s)"
+            if skipped_count > 0:
+                message += f"\n{skipped_count} destinataire(s) ignoré(s) (doublons ou emails invalides)"
+
+            QMessageBox.information(self, "Importation terminée", message)
+
+        except Exception as e:
+            QMessageBox.critical(self, "Erreur", f"Erreur lors de l'importation : \n{str(e)}")
+
+    def export_recipients(self):
+        """Exporte les destinataires vers un fichier CSV"""
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Exporter les destinataires",
+            "destinataires_export.csv",
+            "Fichiers CSV (*.csv);;Tous les fichiers (*)"
+        )
+
+        if not file_path:
+            return
+        
+        try:
+            recipients = self.recipients_manager.load_recipients()
+
+            import csv
+            with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=['name', 'email'])
+                writer.writeheader()
+                writer.writerows(recipients)
+
+            QMessageBox.information(self, "Succès", f"Liste exportée vers :\n{file_path}")
+
+        except Exception as e:
+            QMessageBox.critical(self, "Erreur", f"Erreur lors de l'exportation : \n{str(e)}")
 
     def add_drive_link(self, media_type):
         link, ok = QInputDialog.getText(

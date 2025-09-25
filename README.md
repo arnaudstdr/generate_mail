@@ -12,6 +12,7 @@ Un script Python pour générer des templates HTML d'emails personnalisés avec 
 - **Interface graphique moderne** avec PyQt5 (✅ Nouveau)
 - **Interface interactive en terminal** pour saisir le contenu
 - **Système d'envoi d'emails complet** (✅ Nouveau)
+- **Gestionnaire de destinataires intégré** (✅ Nouveau)
 - **Design responsive** avec couleurs inspirées de l'Afrique
 - **Support des médias Google Drive** (photos et vidéos)
 - **Templates HTML optimisés** pour l'email
@@ -53,17 +54,18 @@ Un script Python pour générer des templates HTML d'emails personnalisés avec 
 ```
 
 Au démarrage, choisissez le mode d'utilisation :
-- 1) 🖥️ Interface graphique (GUI) — nécessite PyQt5
-- 2) 💻 Mode Terminal (menu texte)
+1. 🖥️ Interface graphique (GUI) — nécessite PyQt5
+2. 💻 Mode Terminal (menu texte)
 
 Options disponibles en mode Terminal :
 1. **🚀 Lancer le générateur interactif complet**
 2. **📬 Envoyer les emails** ✅ Nouveau
-3. **🧪 Tester un email** ✅ Nouveau  
-4. **🎮 Voir la démonstration rapide**
-5. **🧪 Tester des liens Google Drive**
-6. **📚 Afficher l'aide**
-7. **🌐 Ouvrir le dernier template généré**
+3. **📮 Gérer les destinataires** ✅ Nouveau
+4. **🧪 Tester un email** ✅ Nouveau  
+5. **🎮 Voir la démonstration rapide**
+6. **🧪 Tester des liens Google Drive**
+7. **📚 Afficher l'aide**
+8. **🌐 Ouvrir le dernier template généré**
 
 > Astuce: si PyQt5 n'est pas installé, le script bascule automatiquement en mode Terminal. Installez les dépendances avec:
 > ```bash
@@ -97,6 +99,11 @@ python test_email.py
 python run_demo.py
 ```
 
+**Gestion des destinataires :**
+```bash
+python manage_recipients.py
+```
+
 **Testeur de liens :**
 ```bash
 python test_drive_links.py
@@ -115,6 +122,9 @@ Si vous préférez utiliser explicitement l'environnement virtuel :
 
 # Envoi d'emails
 .venv/bin/python send_emails.py
+
+# Gestion des destinataires
+.venv/bin/python manage_recipients.py
 
 # Test d'un email
 .venv/bin/python test_email.py
@@ -150,7 +160,6 @@ Collez vos liens un par un pour voir lesquels fonctionnent le mieux.
 - 📋 Gestion des listes de photos et vidéos
 - 👁️ Aperçu du template en temps réel
 - 📧 Envoi d'emails intégré
-- 📊 Suivi des destinataires
 
 **Lancement :**
 ```bash
@@ -159,8 +168,88 @@ python gui.py
 
 L'interface inclut :
 - **Générateur** : Création de templates avec interface visuelle
-- **Envoi d'emails** : Sélection de templates et gestion des destinataires
-- **Configuration** : Paramètres SMTP et options d'envoi
+- **Envoi d'emails** : Choix du template, visualisation, et envoi
+- **Gestion des destinataires** : Interface graphique pour gérer la liste des contacts ✅ Nouveau
+
+## 📮 Gestion des destinataires
+
+**Nouveau !** Un système complet de gestion des destinataires est maintenant disponible :
+
+### Interface en ligne de commande
+
+```bash
+# Lancer le gestionnaire de destinataires
+python manage_recipients.py
+```
+
+Le gestionnaire offre un menu interactif avec les fonctionnalités suivantes :
+
+**Menu principal :**
+- 🔍 **Affichage de la liste** : Visualisation de tous les destinataires avec numérotation
+- ➕ **Ajouter un destinataire** : Saisie du nom et de l'email avec validation
+- ✏️ **Modifier un destinataire** : Edition des informations existantes
+- 🗑️ **Supprimer un destinataire** : Suppression sélective par numéro
+- 📥 **Importer depuis un fichier CSV** : Import en masse depuis un autre fichier
+
+**Fonctionnalités avancées :**
+- ✅ Validation automatique des adresses email
+- ✅ Détection et prévention des doublons
+- ✅ Sauvegarde automatique au format CSV
+- ✅ Interface intuitive avec navigation par numéros
+
+### Interface graphique (PyQt5)
+
+Dans l'interface graphique, un onglet dédié **"📮 Gestion des Destinataires"** propose :
+
+**Fonctionnalités GUI :**
+- 📋 **Tableau interactif** : Visualisation en colonnes (Nom | Email)
+- ➕ **Bouton Ajouter** : Formulaires de saisie avec validation
+- ✏️ **Bouton Modifier** : Edition directe des entrées sélectionnées
+- 🗑️ **Bouton Supprimer** : Suppression avec confirmation
+- 📥 **Bouton Importer** : Sélection de fichier CSV via explorateur
+
+**Avantages de l'interface graphique :**
+- 👁️ Visualisation claire en tableau
+- 🖱️ Sélection intuitive par clic
+- 📁 Sélecteur de fichiers intégré pour l'import
+- ⚡ Mise à jour en temps réel de l'affichage
+
+### Format du fichier CSV
+
+Le fichier `scripts/email_sender/destinataires.csv` utilise le format suivant :
+
+```csv
+name,email
+Jean Dupont,jean.dupont@exemple.com
+Marie Martin,marie.martin@exemple.fr
+Pierre Durand,pierre@association.org
+```
+
+**Structure :**
+- **Header obligatoire** : `name,email`
+- **Encodage** : UTF-8 pour les caractères spéciaux
+- **Validation** : Les emails doivent contenir un `@`
+- **Unicité** : Pas de doublons d'emails autorisés
+
+### Import en masse
+
+Pour importer des destinataires depuis un autre fichier :
+
+**Depuis le terminal :**
+1. Lancer `python manage_recipients.py`
+2. Choisir option **"4. Importer depuis un fichier CSV"**
+3. Saisir le chemin complet du fichier à importer
+
+**Depuis l'interface graphique :**
+1. Ouvrir l'onglet **"📮 Gestion des Destinataires"**
+2. Cliquer sur **"📥 Importer"**
+3. Sélectionner le fichier CSV via l'explorateur
+
+**Fonctionnalités d'import :**
+- ✅ Détection automatique des doublons
+- ✅ Validation des emails lors de l'import
+- ✅ Rapport détaillé (importés vs ignorés)
+- ✅ Fusion avec la liste existante
 
 ## 📬 Envoi d'emails automatisé
 
@@ -168,7 +257,7 @@ L'interface inclut :
 
 ### Configuration
 1. Créez un fichier `.env` avec vos paramètres SMTP (voir `CONFIGURATION.md`)
-2. Ajoutez vos destinataires dans `scripts/email_sender/destinataires.csv`
+2. Ajoutez vos destinataires dans `scripts/email_sender/destinataires.csv` ou utilisez le gestionnaire de destinataires
 
 ### Utilisation
 ```bash
@@ -181,9 +270,8 @@ python test_email.py votre.email@exemple.com
 
 ### Fonctionnalités d'envoi
 - ✅ Support SMTP (Gmail, Outlook, serveurs personnalisés)
-- ✅ Gestion des pièces jointes
 - ✅ Templates HTML avec images
-- ✅ Liste de destinataires CSV
+- ✅ Liste de destinataires CSV avec gestionnaire intégré
 - ✅ Logs d'envoi détaillés
 - ✅ Test avant envoi en masse
 
@@ -248,6 +336,7 @@ template_mail_gamadji/
 ├── 📄 generate_template.py          # Point d'entrée principal
 ├── 📄 gui.py                        # Interface graphique (PyQt5) ✅ NOUVEAU
 ├── 📄 send_emails.py                # Point d'entrée envoi d'emails ✅ NOUVEAU
+├── 📄 manage_recipients.py          # Gestionnaire de destinataires ✅ NOUVEAU
 ├── 📄 test_email.py                 # Test d'envoi d'un email ✅ NOUVEAU
 ├── 📄 run_demo.py                   # Lancement démo
 ├── 📄 test_drive_links.py           # Test des liens
@@ -351,17 +440,14 @@ Si vos photos ne s'affichent toujours pas :
 ### 📧 Améliorations du module d'envoi (✅ Base implémentée)
 Le module d'envoi est fonctionnel et peut être enrichi avec :
 
-- **API Gmail OAuth2** - Authentification sécurisée Google
-- **Services tiers avancés** - SendGrid, Mailgun, Amazon SES
-- **Templates de relance** - Emails de suivi automatiques  
-- **Tracking avancé** - Ouverture, clics, statistiques détaillées
-- **Planification d'envois** - Envois programmés et récurrents
+- **Envoi via Gmail API** - Configuration OAuth2
+- **Envoi via SMTP** - Serveurs email personnalisés  
+
 
 ### 🔮 Fonctionnalités futures
 - **Templates multiples** - Choix de designs et layouts
 - **Intégration API Google Drive** - Synchronisation automatique
-- **Éditeur visuel avancé** - WYSIWYG pour les templates
-- **Workflow d'approbation** - Validation avant envoi
+- **Gestion avancée des destinataires** - Segmentation et listes dynamiques
 - **Analytics avancées** - Tableaux de bord et rapports
 - **Multi-langues** - Support international
 
