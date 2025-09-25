@@ -9,7 +9,9 @@ Un script Python pour générer des templates HTML d'emails personnalisés avec 
 
 ## 🎯 Fonctionnalités
 
-- **Interface interactive** pour saisir le contenu
+- **Interface graphique moderne** avec PyQt5 (✅ Nouveau)
+- **Interface interactive en terminal** pour saisir le contenu
+- **Système d'envoi d'emails complet** (✅ Nouveau)
 - **Design responsive** avec couleurs inspirées de l'Afrique
 - **Support des médias Google Drive** (photos et vidéos)
 - **Templates HTML optimisés** pour l'email
@@ -17,6 +19,8 @@ Un script Python pour générer des templates HTML d'emails personnalisés avec 
 - **Maximum 10 photos et 10 vidéos** par email
 - **🧪 Testeur de liens** Google Drive intégré
 - **🔄 URLs de fallback** pour améliorer l'affichage des photos
+- **📧 Test d'envoi d'email** avant diffusion massive
+- **📊 Gestion des destinataires** via fichier CSV
 
 ## 🚀 Installation
 
@@ -28,11 +32,17 @@ Un script Python pour générer des templates HTML d'emails personnalisés avec 
 
 2. **L'environnement Python est déjà configuré** avec les dépendances installées :
    - `requests` - pour les interactions avec Google Drive
-   - `Pillow` - pour le traitement d'images (si nécessaire)
+   - `Pillow` - pour le traitement d'images
+   - `PyQt5` - pour l'interface graphique ✅ Nouveau
+   - `python-dotenv` - pour la gestion des variables d'environnement
+   - `yagmail` - pour l'envoi d'emails simplifié ✅ Nouveau
+   - `bs4` - pour le parsing HTML
+   - `google-*` - pour les APIs Google Drive
 
 3. **Configuration des variables d'environnement**
    - Créez un fichier `.env` à la racine du projet (voir [CONFIGURATION.md](./CONFIGURATION.md))
-   - Ajoutez-y vos identifiants pour l'envoi d'emails
+   - Ajoutez-y vos identifiants pour l'envoi d'emails et APIs Google ✅ Nouveau
+   - Configurez vos paramètres SMTP selon votre fournisseur de messagerie
 
 ## 📋 Utilisation
 
@@ -48,11 +58,12 @@ Au démarrage, choisissez le mode d'utilisation :
 
 Options disponibles en mode Terminal :
 1. **🚀 Lancer le générateur interactif complet**
-2. **📬 Envoyer les emails**
-3. **🎮 Voir la démonstration rapide**
-4. **🧪 Tester des liens Google Drive**
-5. **📚 Afficher l'aide**
-6. **🌐 Ouvrir le dernier template généré**
+2. **📬 Envoyer les emails** ✅ Nouveau
+3. **🧪 Tester un email** ✅ Nouveau  
+4. **🎮 Voir la démonstration rapide**
+5. **🧪 Tester des liens Google Drive**
+6. **📚 Afficher l'aide**
+7. **🌐 Ouvrir le dernier template généré**
 
 > Astuce: si PyQt5 n'est pas installé, le script bascule automatiquement en mode Terminal. Installez les dépendances avec:
 > ```bash
@@ -64,6 +75,21 @@ Options disponibles en mode Terminal :
 **Générateur principal :**
 ```bash
 python generate_template.py
+```
+
+**Interface graphique :**
+```bash
+python gui.py
+```
+
+**Envoi d'emails :**
+```bash
+python send_emails.py
+```
+
+**Test d'un email :**
+```bash
+python test_email.py
 ```
 
 **Démonstration :**
@@ -83,6 +109,15 @@ Si vous préférez utiliser explicitement l'environnement virtuel :
 ```bash
 # Générateur principal
 .venv/bin/python generate_template.py
+
+# Interface graphique
+.venv/bin/python gui.py
+
+# Envoi d'emails
+.venv/bin/python send_emails.py
+
+# Test d'un email
+.venv/bin/python test_email.py
 
 # Démonstration  
 .venv/bin/python run_demo.py
@@ -106,6 +141,51 @@ python test_drive_links.py
 ```
 
 Collez vos liens un par un pour voir lesquels fonctionnent le mieux.
+
+## 🖥️ Interface graphique (PyQt5)
+
+**Nouveau !** Une interface graphique moderne est maintenant disponible :
+
+- 🎨 Interface utilisateur intuitive avec onglets
+- 📋 Gestion des listes de photos et vidéos
+- 👁️ Aperçu du template en temps réel
+- 📧 Envoi d'emails intégré
+- 📊 Suivi des destinataires
+
+**Lancement :**
+```bash
+python gui.py
+```
+
+L'interface inclut :
+- **Générateur** : Création de templates avec interface visuelle
+- **Envoi d'emails** : Sélection de templates et gestion des destinataires
+- **Configuration** : Paramètres SMTP et options d'envoi
+
+## 📬 Envoi d'emails automatisé
+
+**Nouveau !** Le système d'envoi d'emails est maintenant pleinement fonctionnel :
+
+### Configuration
+1. Créez un fichier `.env` avec vos paramètres SMTP (voir `CONFIGURATION.md`)
+2. Ajoutez vos destinataires dans `scripts/email_sender/destinataires.csv`
+
+### Utilisation
+```bash
+# Envoi en masse
+python send_emails.py
+
+# Test d'un seul email
+python test_email.py votre.email@exemple.com
+```
+
+### Fonctionnalités d'envoi
+- ✅ Support SMTP (Gmail, Outlook, serveurs personnalisés)
+- ✅ Gestion des pièces jointes
+- ✅ Templates HTML avec images
+- ✅ Liste de destinataires CSV
+- ✅ Logs d'envoi détaillés
+- ✅ Test avant envoi en masse
 
 ### Interface interactive
 
@@ -161,9 +241,14 @@ template_mail_gamadji/
 │   ├── template_html.py             # Templates HTML
 │   ├── demo.py                      # Démonstration
 │   ├── test_links.py               # Testeur de liens
-│   └── 📁 email_sender/            # Module d'envoi (futur)
-│       └── __init__.py             # Classes d'envoi email
+│   └── 📁 email_sender/            # Module d'envoi d'emails ✅ IMPLÉMENTÉ
+│       ├── __init__.py             # Classes d'envoi email
+│       ├── mail.py                 # Module d'envoi principal
+│       └── destinataires.csv       # Liste des destinataires
 ├── 📄 generate_template.py          # Point d'entrée principal
+├── 📄 gui.py                        # Interface graphique (PyQt5) ✅ NOUVEAU
+├── 📄 send_emails.py                # Point d'entrée envoi d'emails ✅ NOUVEAU
+├── 📄 test_email.py                 # Test d'envoi d'un email ✅ NOUVEAU
 ├── 📄 run_demo.py                   # Lancement démo
 ├── 📄 test_drive_links.py           # Test des liens
 ├── 📄 launch.sh                     # Menu de lancement (GUI ou Terminal)
@@ -171,8 +256,13 @@ template_mail_gamadji/
 ├── 📁 .venv/                        # Environnement Python
 ├── 📄 README.md                     # Documentation
 ├── 📄 requirements.txt              # Dépendances Python
-├── 📄 .gitignore                    # Fichiers à ignorer (Git)
-└── 📄 DEPANNAGE_PHOTOS.md          # Guide dépannage
+├── 📄 CONFIGURATION.md              # Guide de configuration ✅ NOUVEAU
+├── 📄 DEPANNAGE_PHOTOS.md          # Guide dépannage
+├── 📄 CHANGELOG.md                  # Journal des modifications ✅ NOUVEAU
+├── 📄 LICENCE                       # Licence du projet
+├── 📄 logo.png                      # Logo de l'association ✅ NOUVEAU
+├── 📄 logo_base64.txt               # Logo encodé en base64 ✅ NOUVEAU
+└── 📄 .gitignore                    # Fichiers à ignorer (Git)
 ```
 
 ## 🔧 Fonctions principales
@@ -258,30 +348,32 @@ Si vos photos ne s'affichent toujours pas :
 
 ## 🚧 Prochaines étapes
 
-### 📧 Module d'envoi d'emails (en préparation)
-Le dossier `scripts/email_sender/` est déjà préparé pour accueillir les fonctionnalités d'envoi :
+### 📧 Améliorations du module d'envoi (✅ Base implémentée)
+Le module d'envoi est fonctionnel et peut être enrichi avec :
 
-- **Envoi via Gmail API** - Configuration OAuth2
-- **Envoi via SMTP** - Serveurs email personnalisés  
-- **Services tiers** - SendGrid, Mailgun, etc.
-- **Listes de diffusion** - Gestion des destinataires
-- **Tracking des envois** - Suivi des emails envoyés
-- **Templates de relance** - Emails de suivi automatiques
+- **API Gmail OAuth2** - Authentification sécurisée Google
+- **Services tiers avancés** - SendGrid, Mailgun, Amazon SES
+- **Templates de relance** - Emails de suivi automatiques  
+- **Tracking avancé** - Ouverture, clics, statistiques détaillées
+- **Planification d'envois** - Envois programmés et récurrents
 
 ### 🔮 Fonctionnalités futures
-- Templates multiples au choix
-- Intégration API Google Drive avancée
-- Éditeur de templates visuel
-- Planification d'envois
-- Statistiques et analytics
+- **Templates multiples** - Choix de designs et layouts
+- **Intégration API Google Drive** - Synchronisation automatique
+- **Éditeur visuel avancé** - WYSIWYG pour les templates
+- **Workflow d'approbation** - Validation avant envoi
+- **Analytics avancées** - Tableaux de bord et rapports
+- **Multi-langues** - Support international
 
-### 🏗️ Architecture extensible
-La nouvelle structure modulaire facilite :
-- ✅ Ajout de nouveaux scripts
-- ✅ Développement en équipe
-- ✅ Tests unitaires
-- ✅ Maintenance du code
-- ✅ Réutilisation des composants
+### 🏗️ Architecture et développement
+La structure modulaire facilite :
+- ✅ Interface graphique PyQt5 implémentée
+- ✅ Module d'envoi d'emails opérationnel
+- ✅ Tests unitaires de base
+- ✅ Documentation complète
+- 🔄 API REST pour intégrations externes
+- 🔄 Docker pour déploiement simplifié
+- 🔄 CI/CD avec GitHub Actions
 
 ## 🆘 Dépannage
 
