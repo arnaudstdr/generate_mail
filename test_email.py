@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Script de test pour l'envoi d'un email avant l'envoi en masse
-Association Gamadji - Village en Afrique
+Arnaud STADLER - Dev Python | 🌍 Association Gamadji Saré
 """
 
 import sys

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Point d'entrée pour l'envoi des templates email
-Association Gamadji - Village en Afrique
+Arnaud STADLER - Dev Python | 🌍 Association Gamadji Saré
 """
 
 import sys
