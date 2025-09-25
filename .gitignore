@@ -77,6 +77,10 @@ htmlcov/
 output/
 data/
 scripts/email_sender/destinataires.csv
+screenshot.png
+logo.png
+logo_base64.txt
+
 
 # Keep the README and essential docs
 !README.md
