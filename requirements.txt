@@ -8,6 +8,10 @@ google-api-python-client
 PyQt5
 requests-oauthlib
 yagmail
+# Celery et Redis pour l'envoi asynchrone d'emails
+celery
+redis
+celery[redis]
 # Optionnel (pour SMTP/gestion email avancée)
 # aiosmtplib
 # sendgrid

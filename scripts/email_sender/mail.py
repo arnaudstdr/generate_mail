@@ -138,6 +138,65 @@ class EmailSender:
                 
                 # Pause pour éviter d'être considéré comme spammeur
                 time.sleep(5)
+    
+    def send_bulk_emails_async(self, delay_between_emails=5):
+        """
+        Lance l'envoi en masse d'emails de manière asynchrone avec Celery.
+        Cette méthode ne bloque pas et retourne immédiatement.
+        
+        Args:
+            delay_between_emails: Délai en secondes entre chaque email (défaut: 5)
+        
+        Returns:
+            dict: Informations sur la tâche lancée (task_id, nombre d'emails, etc.)
+        """
+        try:
+            from .tasks import send_bulk_emails_task
+            
+            print("📬 Lancement de l'envoi asynchrone avec Celery...")
+            print("💡 Les emails seront envoyés en arrière-plan.")
+            print("⏳ Vous pouvez continuer à utiliser l'application.")
+            
+            # Obtenir le chemin du dernier template
+            latest_template = max(
+                glob.glob(str(self.project_root / "output" / "email_template_*.html")),
+                key=os.path.getctime
+            )
+            
+            # Lancer la tâche asynchrone
+            result = send_bulk_emails_task.apply_async(
+                kwargs={
+                    'csv_path': str(self.destinataires_path),
+                    'template_path': latest_template,
+                    'delay_between_emails': delay_between_emails
+                }
+            )
+            
+            print(f"✅ Tâche créée avec succès!")
+            print(f"🆔 ID de la tâche: {result.id}")
+            print(f"📊 Utilisez 'python check_email_status.py {result.id}' pour suivre l'avancement")
+            
+            return {
+                'task_id': result.id,
+                'status': 'scheduled',
+                'message': 'Envoi en masse planifié en arrière-plan'
+            }
+            
+        except ImportError:
+            print("❌ Celery n'est pas installé ou configuré.")
+            print("💡 Installez les dépendances: pip install -r requirements.txt")
+            print("💡 Démarrez Redis: redis-server")
+            print("💡 Démarrez le worker Celery: ./start_celery_worker.sh")
+            return {
+                'status': 'error',
+                'message': 'Celery non disponible, utilisez send_bulk_emails() à la place'
+            }
+        except Exception as e:
+            print(f"❌ Erreur lors du lancement de l'envoi asynchrone: {str(e)}")
+            return {
+                'status': 'error',
+                'message': str(e)
+            }
 
 if __name__ == "__main__":
     sender = EmailSender()
