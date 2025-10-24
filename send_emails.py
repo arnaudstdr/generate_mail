@@ -24,13 +24,19 @@ def main():
     print("   ✅ Idéal pour envoyer à de nombreux destinataires")
     print("   ⚠️  Nécessite Redis et le worker Celery actif")
     print()
-    print("2) 💻 Envoi SYNCHRONE (classique)")
+    print("2) 🧪 TEST ASYNCHRONE (simulation)")
+    print("   ✅ Teste le système sans envoyer d'emails")
+    print("   ✅ Parfait pour vérifier que tout fonctionne")
+    print("   ✅ Option de limiter le nombre de destinataires")
+    print("   ⚠️  Nécessite Redis et le worker Celery actif")
+    print()
+    print("3) 💻 Envoi SYNCHRONE (classique)")
     print("   ⏳ Bloquant - attend la fin de tous les envois")
     print("   ⚠️  Peut prendre beaucoup de temps (200+ destinataires)")
     print("   ✅ Ne nécessite pas de configuration supplémentaire")
     print()
     
-    choice = input("Votre choix (1-2, défaut 1) : ").strip()
+    choice = input("Votre choix (1-3, défaut 1) : ").strip()
     choice = choice if choice else "1"
     
     try:
@@ -112,6 +118,94 @@ def main():
         
         elif choice == "2":
             print()
+            print("🧪 MODE TEST ASYNCHRONE SÉLECTIONNÉ")
+            print("-" * 60)
+            
+            # Vérifications préalables
+            print("🔍 Vérifications préalables...")
+            
+            try:
+                import celery
+                import redis
+                print("✅ Celery et Redis sont installés")
+            except ImportError as e:
+                print(f"❌ Dépendance manquante: {e}")
+                print("💡 Installez les dépendances: pip install -r requirements.txt")
+                return
+            
+            # Vérifier Redis
+            try:
+                import redis as redis_lib
+                r = redis_lib.Redis(host='localhost', port=6379, db=0)
+                r.ping()
+                print("✅ Redis est accessible")
+            except Exception:
+                print("❌ Redis n'est pas accessible")
+                print("💡 Démarrez Redis:")
+                print("   - Sur macOS: brew services start redis")
+                print("   - Sur Linux: sudo systemctl start redis")
+                print("   - Manuellement: redis-server")
+                return
+            
+            # Avertissement sur le worker
+            print()
+            print("⚠️  IMPORTANT: Le worker Celery doit être démarré pour traiter les tâches")
+            print()
+            response = input("Le worker Celery est-il démarré? (o/n) : ").strip().lower()
+            
+            if response not in ['o', 'oui', 'y', 'yes']:
+                print()
+                print("💡 Pour démarrer le worker Celery:")
+                print("   ./start_celery_worker.sh")
+                print()
+                print("   Dans un autre terminal, ou en mode daemon")
+                return
+            
+            print()
+            print("📬 Configuration du test...")
+            
+            # Option de limitation
+            limit_input = input("Limiter le nombre de destinataires? (laissez vide pour tous, ou entrez un nombre) : ").strip()
+            limit = int(limit_input) if limit_input.isdigit() and int(limit_input) > 0 else None
+            
+            # Personnalisation du délai (réduit pour les tests)
+            delay_input = input("Délai entre chaque email en secondes (défaut: 1 pour test) : ").strip()
+            delay = int(delay_input) if delay_input.isdigit() else 1
+            
+            print()
+            print("🧪 Lancement du TEST asynchrone...")
+            print("💡 Aucun email ne sera réellement envoyé")
+            
+            result = sender.send_bulk_emails_async(
+                delay_between_emails=delay,
+                dry_run=True,
+                limit=limit
+            )
+            
+            if result.get('status') == 'scheduled':
+                print()
+                print("=" * 60)
+                print("✅ TEST PLANIFIÉ AVEC SUCCÈS!")
+                print("=" * 60)
+                print(f"🆔 ID de la tâche: {result['task_id']}")
+                if limit:
+                    print(f"📊 Limitation: {limit} destinataires")
+                print()
+                print("💡 Pour suivre l'avancement du test:")
+                print(f"   python check_email_status.py {result['task_id']} --bulk")
+                print()
+                print("💡 Pour lister toutes les tâches actives:")
+                print("   python check_email_status.py --list")
+                print()
+                print("🧪 Les tâches de test sont exécutées en arrière-plan.")
+                print("   Surveillez les logs du worker Celery pour voir la progression.")
+            else:
+                print()
+                print("❌ Erreur lors de la planification du test")
+                print(f"   {result.get('message', 'Erreur inconnue')}")
+        
+        elif choice == "3":
+            print()
             print("💻 MODE SYNCHRONE SÉLECTIONNÉ")
             print("-" * 60)
             print("⚠️  ATTENTION: Cette opération peut prendre beaucoup de temps")
@@ -134,7 +228,7 @@ def main():
                 print("❌ Envoi annulé")
         
         else:
-            print("❌ Choix invalide. Veuillez choisir 1 ou 2.")
+            print("❌ Choix invalide. Veuillez choisir 1, 2 ou 3.")
     
     except KeyboardInterrupt:
         print("\n\n❌ Envoi annulé par l'utilisateur")

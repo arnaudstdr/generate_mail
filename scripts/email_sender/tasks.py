@@ -26,7 +26,8 @@ sys.path.insert(0, str(project_root))
 )
 def send_email_task(self, recipient_email: str, recipient_name: str, 
                     template_path: Optional[str] = None, 
-                    subject: Optional[str] = None):
+                    subject: Optional[str] = None,
+                    dry_run: bool = False):
     """
     Tâche Celery pour envoyer un email à un destinataire.
     
@@ -36,6 +37,7 @@ def send_email_task(self, recipient_email: str, recipient_name: str,
         recipient_name: Nom du destinataire
         template_path: Chemin vers le template HTML (optionnel)
         subject: Sujet de l'email (optionnel)
+        dry_run: Si True, simule l'envoi sans envoyer réellement (défaut: False)
     
     Returns:
         dict: Résultat de l'envoi avec statut et informations
@@ -43,6 +45,21 @@ def send_email_task(self, recipient_email: str, recipient_name: str,
     try:
         # Import local pour éviter les problèmes de circular imports
         from .mail import EmailSender
+        
+        if dry_run:
+            print(f"🧪 [TEST] Simulation d'envoi à {recipient_name} <{recipient_email}>...")
+            # Simuler un délai d'envoi (rapide pour les tests)
+            import time
+            time.sleep(0.5)
+            print(f"✅ [TEST] Envoi simulé avec succès à {recipient_name}")
+            return {
+                'status': 'success',
+                'recipient': recipient_email,
+                'name': recipient_name,
+                'task_id': self.request.id,
+                'dry_run': True,
+                'message': 'Envoi simulé (dry-run mode)'
+            }
         
         print(f"📧 Envoi de l'email à {recipient_name} <{recipient_email}>...")
         
@@ -98,7 +115,9 @@ def send_email_task(self, recipient_email: str, recipient_name: str,
 )
 def send_bulk_emails_task(self, csv_path: Optional[str] = None, 
                           template_path: Optional[str] = None,
-                          delay_between_emails: int = 5):
+                          delay_between_emails: int = 5,
+                          dry_run: bool = False,
+                          limit: Optional[int] = None):
     """
     Tâche Celery pour orchestrer l'envoi en masse d'emails.
     Cette tâche crée des sous-tâches pour chaque destinataire.
@@ -108,6 +127,8 @@ def send_bulk_emails_task(self, csv_path: Optional[str] = None,
         csv_path: Chemin vers le fichier CSV des destinataires (optionnel)
         template_path: Chemin vers le template HTML (optionnel)
         delay_between_emails: Délai en secondes entre chaque email (défaut: 5)
+        dry_run: Si True, simule l'envoi sans envoyer réellement (défaut: False)
+        limit: Limite le nombre de destinataires (pour les tests, optionnel)
     
     Returns:
         dict: Résumé de l'envoi en masse avec liste des tâches créées
@@ -138,7 +159,15 @@ def send_bulk_emails_task(self, csv_path: Optional[str] = None,
                         'name': row['name']
                     })
         
-        print(f"📊 {len(destinataires)} destinataires trouvés")
+        # Limiter le nombre de destinataires si demandé (pour les tests)
+        if limit and limit > 0:
+            destinataires = destinataires[:limit]
+            print(f"🧪 Mode test: limitation à {len(destinataires)} destinataires")
+        
+        print(f"📊 {len(destinataires)} destinataires {'(simulation)' if dry_run else ''}")
+        
+        if dry_run:
+            print("🧪 MODE TEST ACTIVÉ - Aucun email ne sera réellement envoyé")
         
         # Créer une tâche pour chaque destinataire avec délai progressif
         task_ids = []
@@ -151,7 +180,8 @@ def send_bulk_emails_task(self, csv_path: Optional[str] = None,
                     destinataire['email'],
                     destinataire['name'],
                     template_path,
-                    None  # subject
+                    None,  # subject
+                    dry_run  # dry_run parameter
                 ],
                 countdown=countdown
             )
@@ -160,10 +190,12 @@ def send_bulk_emails_task(self, csv_path: Optional[str] = None,
                 'task_id': task.id,
                 'recipient': destinataire['email'],
                 'name': destinataire['name'],
-                'scheduled_delay': countdown
+                'scheduled_delay': countdown,
+                'dry_run': dry_run
             })
         
-        print(f"✅ {len(task_ids)} tâches d'envoi créées et planifiées")
+        mode_text = "simulées" if dry_run else "créées et planifiées"
+        print(f"✅ {len(task_ids)} tâches d'envoi {mode_text}")
         
         return {
             'status': 'scheduled',

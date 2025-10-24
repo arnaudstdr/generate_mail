@@ -139,13 +139,15 @@ class EmailSender:
                 # Pause pour éviter d'être considéré comme spammeur
                 time.sleep(5)
     
-    def send_bulk_emails_async(self, delay_between_emails=5):
+    def send_bulk_emails_async(self, delay_between_emails=5, dry_run=False, limit=None):
         """
         Lance l'envoi en masse d'emails de manière asynchrone avec Celery.
         Cette méthode ne bloque pas et retourne immédiatement.
         
         Args:
             delay_between_emails: Délai en secondes entre chaque email (défaut: 5)
+            dry_run: Si True, simule l'envoi sans envoyer réellement (défaut: False)
+            limit: Limite le nombre de destinataires (pour les tests, optionnel)
         
         Returns:
             dict: Informations sur la tâche lancée (task_id, nombre d'emails, etc.)
@@ -153,8 +155,12 @@ class EmailSender:
         try:
             from .tasks import send_bulk_emails_task
             
-            print("📬 Lancement de l'envoi asynchrone avec Celery...")
-            print("💡 Les emails seront envoyés en arrière-plan.")
+            if dry_run:
+                print("🧪 MODE TEST - Simulation d'envoi asynchrone avec Celery...")
+                print("💡 Aucun email ne sera réellement envoyé.")
+            else:
+                print("📬 Lancement de l'envoi asynchrone avec Celery...")
+                print("💡 Les emails seront envoyés en arrière-plan.")
             print("⏳ Vous pouvez continuer à utiliser l'application.")
             
             # Obtenir le chemin du dernier template
@@ -168,12 +174,17 @@ class EmailSender:
                 kwargs={
                     'csv_path': str(self.destinataires_path),
                     'template_path': latest_template,
-                    'delay_between_emails': delay_between_emails
+                    'delay_between_emails': delay_between_emails,
+                    'dry_run': dry_run,
+                    'limit': limit
                 }
             )
             
-            print(f"✅ Tâche créée avec succès!")
+            mode_text = "test créée" if dry_run else "créée"
+            print(f"✅ Tâche {mode_text} avec succès!")
             print(f"🆔 ID de la tâche: {result.id}")
+            if limit:
+                print(f"📊 Limitation: {limit} destinataires")
             print(f"📊 Utilisez 'python check_email_status.py {result.id}' pour suivre l'avancement")
             
             return {
