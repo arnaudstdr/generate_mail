@@ -37,6 +37,8 @@ Un script Python pour générer des templates HTML d'emails personnalisés avec 
    - `PyQt5` - pour l'interface graphique ✅ Nouveau
    - `python-dotenv` - pour la gestion des variables d'environnement
    - `yagmail` - pour l'envoi d'emails simplifié ✅ Nouveau
+   - `celery` - pour l'envoi asynchrone d'emails ✅ Nouveau
+   - `redis` - base de données pour la file d'attente ✅ Nouveau
    - `bs4` - pour le parsing HTML
    - `google-*` - pour les APIs Google Drive
 
@@ -109,6 +111,15 @@ python manage_recipients.py
 python test_drive_links.py
 ```
 
+**Worker Celery (envoi asynchrone) :**
+```bash
+bash start_celery_worker.sh
+```
+ou
+```bash
+celery -A scripts.email_sender.celery_app worker --loglevel=info
+```
+
 ### Utilisation avec l'environnement virtuel
 
 Si vous préférez utiliser explicitement l'environnement virtuel :
@@ -134,6 +145,9 @@ Si vous préférez utiliser explicitement l'environnement virtuel :
 
 # Testeur de liens
 .venv/bin/python test_drive_links.py
+
+# Worker Celery (envoi asynchrone)
+.venv/bin/celery -A scripts.email_sender.celery_app worker --loglevel=info
 ```
 
 ## 🧪 Testeur de liens Google Drive
@@ -253,19 +267,25 @@ Pour importer des destinataires depuis un autre fichier :
 
 ## 📬 Envoi d'emails automatisé
 
-**Nouveau !** Le système d'envoi d'emails est maintenant pleinement fonctionnel :
+**Nouveau !** Le système d'envoi d'emails est maintenant pleinement fonctionnel avec support asynchrone :
 
 ### Configuration
 1. Créez un fichier `.env` avec vos paramètres SMTP (voir `CONFIGURATION.md`)
 2. Ajoutez vos destinataires dans `scripts/email_sender/destinataires.csv` ou utilisez le gestionnaire de destinataires
+3. (Optionnel) Configurez Celery + Redis pour l'envoi asynchrone (voir `CELERY_SETUP.md`)
 
 ### Utilisation
 ```bash
-# Envoi en masse
+# Envoi en masse (synchrone)
 python send_emails.py
 
 # Test d'un seul email
 python test_email.py votre.email@exemple.com
+
+# Envoi asynchrone avec Celery (nécessite Redis)
+bash start_celery_worker.sh
+# Dans une autre fenêtre:
+python send_emails.py --async
 ```
 
 ### Fonctionnalités d'envoi
@@ -274,6 +294,9 @@ python test_email.py votre.email@exemple.com
 - ✅ Liste de destinataires CSV avec gestionnaire intégré
 - ✅ Logs d'envoi détaillés
 - ✅ Test avant envoi en masse
+- ✅ Envoi asynchrone avec Celery + Redis (non bloquant)
+- ✅ Retry automatique en cas d'échec
+- ✅ Rate limiting pour éviter les blocages
 
 ### Interface interactive
 
@@ -435,26 +458,38 @@ Si vos photos ne s'affichent toujours pas :
 3. **Compatibilité email** : Le HTML généré est optimisé pour les clients email
 4. **Responsive** : Le design s'adapte automatiquement aux écrans mobiles
 
+## 🔄 Envoi asynchrone avec Celery + Redis (✅ Implémenté)
+
+**Nouveau !** Le projet intègre maintenant Celery et Redis pour l'envoi asynchrone d'emails :
+
+### Avantages
+- ✅ **Envoi non-bloquant** : l'application continue à fonctionner pendant l'envoi
+- ✅ **Traitement en arrière-plan** : gestion des tâches par un worker dédié
+- ✅ **Retry automatique** : réessai des emails en cas d'échec
+- ✅ **Rate limiting** : contrôle du débit d'envoi
+- ✅ **Monitoring** : suivi de l'avancement des envois
+
+**Configuration :** voir [CELERY_SETUP.md](./CELERY_SETUP.md)
+
+**Lancement du worker :**
+```bash
+bash start_celery_worker.sh
+```
+
 ## 🚧 Prochaines étapes
-
-### 📧 Améliorations du module d'envoi (✅ Base implémentée)
-Le module d'envoi est fonctionnel et peut être enrichi avec :
-
-- **Envoi via Gmail API** - Configuration OAuth2
-- **Envoi via SMTP** - Serveurs email personnalisés  
-
 
 ### 🔮 Fonctionnalités futures
 - **Templates multiples** - Choix de designs et layouts
-- **Intégration API Google Drive** - Synchronisation automatique
-- **Gestion avancée des destinataires** - Segmentation et listes dynamiques
-- **Analytics avancées** - Tableaux de bord et rapports
+- **Intégration API Google Drive avancée** - Synchronisation automatique
+- **Segmentation des destinataires** - Listes dynamiques et filtres
+- **Analytics et rapports** - Tableaux de bord des envois
 - **Multi-langues** - Support international
 
 ### 🏗️ Architecture et développement
 La structure modulaire facilite :
 - ✅ Interface graphique PyQt5 implémentée
-- ✅ Module d'envoi d'emails opérationnel
+- ✅ Module d'envoi d'emails opérationnel (SMTP)
+- ✅ Envoi asynchrone avec Celery + Redis
 - ✅ Tests unitaires de base
 - ✅ Documentation complète
 - 🔄 API REST pour intégrations externes
